@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(APPLE)
   option(BUILD_UNIVERSAL "Build a Universal binary on macOS" ON)
@@ -10,9 +9,7 @@ if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
   else()
     # Build for the host architecture on macOS
-    if(NOT CMAKE_OSX_ARCHITECTURES)
-      set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE STRING "" FORCE)
-    endif()
+    set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE STRING "" FORCE)
   endif()
 endif()
 
@@ -20,7 +17,7 @@ endif()
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set(LLMODEL_VERSION_MAJOR 0)
-set(LLMODEL_VERSION_MINOR 5)
+set(LLMODEL_VERSION_MINOR 2)
 set(LLMODEL_VERSION_PATCH 0)
 set(LLMODEL_VERSION "${LLMODEL_VERSION_MAJOR}.${LLMODEL_VERSION_MINOR}.${LLMODEL_VERSION_PATCH}")
 project(llmodel VERSION ${LLMODEL_VERSION} LANGUAGES CXX C)
@@ -39,16 +36,9 @@ else()
     message(STATUS "Interprocedural optimization support detected")
 endif()
 
-if(NOT APPLE)
-  set(LLAMA_KOMPUTE YES)
-endif()
-
 include(llama.cpp.cmake)
 
 set(BUILD_VARIANTS default avxonly)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(BUILD_VARIANTS ${BUILD_VARIANTS} metal)
-endif()
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -64,15 +54,10 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
     set(LLAMA_F16C ${GPT4ALL_ALLOW_NON_AVX})
     set(LLAMA_FMA  ${GPT4ALL_ALLOW_NON_AVX})
 
-    if (BUILD_VARIANT STREQUAL metal)
-        set(LLAMA_METAL YES)
-    else()
-        set(LLAMA_METAL NO)
-    endif()
-
     # Include GGML
-    set(LLAMA_K_QUANTS YES)
     include_ggml(llama.cpp-mainline -mainline-${BUILD_VARIANT} ON)
+    include_ggml(llama.cpp-230511 -230511-${BUILD_VARIANT} ON)
+    include_ggml(llama.cpp-230519 -230519-${BUILD_VARIANT} ON)
 
     # Function for preparing individual implementations
     function(prepare_target TARGET_NAME BASE_LIB)
@@ -85,9 +70,8 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         target_compile_definitions(${TARGET_NAME}
             PRIVATE GGML_BUILD_VARIANT="${BUILD_VARIANT}")
         # Enable IPO if possible
-# FIXME: Doesn't work with msvc reliably. See https://github.com/nomic-ai/gpt4all/issues/841
-#        set_property(TARGET ${TARGET_NAME}
-#                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
+        set_property(TARGET ${TARGET_NAME}
+                     PROPERTY INTERPROCEDURAL_OPTIMIZATION ${IPO_SUPPORTED})
     endfunction()
 
     # Add each individual implementations
@@ -97,16 +81,25 @@ foreach(BUILD_VARIANT IN LISTS BUILD_VARIANTS)
         LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
     prepare_target(llamamodel-mainline llama-mainline)
 
-    if (NOT LLAMA_METAL)
-        add_library(gptj-${BUILD_VARIANT} SHARED
-            gptj.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
-        prepare_target(gptj llama-mainline)
+    add_library(llamamodel-230519-${BUILD_VARIANT} SHARED
+        llamamodel.cpp llmodel_shared.cpp)
+    target_compile_definitions(llamamodel-230519-${BUILD_VARIANT} PRIVATE
+        LLAMA_VERSIONS===2 LLAMA_DATE=230519)
+    prepare_target(llamamodel-230519 llama-230519)
 
-        add_library(bert-${BUILD_VARIANT} SHARED
-            bert.cpp utils.h utils.cpp llmodel_shared.cpp llmodel_shared.h)
-        target_compile_definitions(bert-${BUILD_VARIANT} PRIVATE LLAMA_VERSIONS=>=3 LLAMA_DATE=999999)
-        prepare_target(bert llama-mainline)
-    endif()
+    add_library(llamamodel-230511-${BUILD_VARIANT} SHARED
+        llamamodel.cpp llmodel_shared.cpp)
+    target_compile_definitions(llamamodel-230511-${BUILD_VARIANT} PRIVATE
+        LLAMA_VERSIONS=<=1 LLAMA_DATE=230511)
+    prepare_target(llamamodel-230511 llama-230511)
+
+    add_library(gptj-${BUILD_VARIANT} SHARED
+        gptj.cpp utils.h utils.cpp llmodel_shared.cpp)
+    prepare_target(gptj ggml-230511)
+
+    add_library(mpt-${BUILD_VARIANT} SHARED
+        mpt.cpp utils.h utils.cpp llmodel_shared.cpp)
+    prepare_target(mpt ggml-230511)
 endforeach()
 
 add_library(llmodel
@@ -114,8 +107,6 @@ add_library(llmodel
     llmodel_c.h llmodel_c.cpp
     dlhandle.h
 )
-target_link_libraries(llmodel PRIVATE ggml-mainline-default)
-target_compile_definitions(llmodel PRIVATE GGML_BUILD_VARIANT="default")
 target_compile_definitions(llmodel PRIVATE LIB_FILE_EXT="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 set_target_properties(llmodel PROPERTIES

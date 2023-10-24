@@ -18,7 +18,7 @@ public:
     };
 
     Dlhandle() : chandle(nullptr) {}
-    Dlhandle(const std::string& fpath, int flags = RTLD_LAZY | RTLD_LOCAL) {
+    Dlhandle(const std::string& fpath, int flags = RTLD_LAZY) {
         chandle = dlopen(fpath.c_str(), flags);
         if (!chandle) {
             throw Exception("dlopen(\""+fpath+"\"): "+dlerror());
@@ -75,7 +75,7 @@ public:
 
     Dlhandle() : chandle(nullptr) {}
     Dlhandle(const std::string& fpath) {
-        chandle = LoadLibraryExA(fpath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+        chandle = LoadLibraryA(fpath.c_str());
         if (!chandle) {
             throw Exception("dlopen(\""+fpath+"\"): Error");
         }

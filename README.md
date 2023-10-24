@@ -1,8 +1,5 @@
 <h1 align="center">GPT4All</h1>
-
 <p align="center">Open-source assistant-style large language models that run locally on your CPU</p>
-
-<p align="center"><strong>New</strong>: Now with Nomic Vulkan Universal GPU support. <a href="https://blog.nomic.ai/posts/gpt4all-gpu-inference-with-vulkan">Learn more</a>.</p>
 
 <p align="center">
 <a href="https://gpt4all.io">GPT4All Website</a>
@@ -28,11 +25,11 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
   <img width="600" height="365" src="https://user-images.githubusercontent.com/13879686/231876409-e3de1934-93bb-4b4b-9013-b491a969ebbc.gif">
 </p>
 <p align="center">
-Run on an M1 macOS Device (not sped up!)
+Run on an M1 Mac (not sped up!)
 </p>
 
 ## GPT4All: An ecosystem of open-source on-edge large language models.
-GPT4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs. Note that your CPU needs to support [AVX or AVX2 instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions).
+GPT4All is an ecosystem to train and deploy **powerful** and **customized** large language models that run locally on consumer grade CPUs.
 
 Learn more in the [documentation](https://docs.gpt4all.io).
 
@@ -46,7 +43,7 @@ Run any GPT4All model natively on your home desktop with the auto-updating deskt
 
 Direct Installer Links:
 
-* [macOS](https://gpt4all.io/installers/gpt4all-installer-darwin.dmg)
+* [Mac/OSX](https://gpt4all.io/installers/gpt4all-installer-darwin.dmg)
 
 * [Windows](https://gpt4all.io/installers/gpt4all-installer-win64.exe)
 
@@ -60,15 +57,11 @@ Find the most up-to-date information on the [GPT4All Website](https://gpt4all.io
 
 ### Bindings
 
-* <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a> [![Downloads](https://static.pepy.tech/badge/gpt4all/week)](https://pepy.tech/project/gpt4all)
+* <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/python/README.md">:snake: Official Python Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/typescript">:computer: Official Typescript Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/golang">:computer: Official GoLang Bindings</a>
 * <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/csharp">:computer: Official C# Bindings</a>
-* <a href="https://github.com/nomic-ai/gpt4all/tree/main/gpt4all-bindings/java">:computer: Official Java Bindings</a>
 
-### Integrations
-
-* 🗃️ [Weaviate Vector Database](https://github.com/weaviate/weaviate) - [module docs](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules/text2vec-gpt4all)
 
 ## Contributing
 GPT4All welcomes contributions, involvement, and discussion from the open source community!
